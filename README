@@ -1,0 +1,2 @@
+Para rodar:
+as prog.s -o prog.o; ld prog.o -o prog; ./prog; echo $?
