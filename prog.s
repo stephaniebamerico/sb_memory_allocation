@@ -25,12 +25,12 @@ _start:
     movq %rsp, %rbp
 
     call allocate_init
-
-    pushq $100
+    
+    pushq $200
     call allocate
     subq $8, %rsp
 
-    pushq $50
+    pushq $150
     call allocate
     subq $8, %rsp
 

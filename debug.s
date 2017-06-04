@@ -30,15 +30,15 @@ _start:
     call allocate
     subq $8, %rsp
 
-    pushq $30
+    pushq $80
     call allocate
     subq $8, %rsp
 
-    pushq $17
+    pushq %rax
     call deallocate
     subq $8, %rsp
-    #jmp debug
-    pushq $10
+
+    pushq $50
     call allocate
     subq $8, %rsp
 
@@ -185,6 +185,7 @@ error:
 # that they can use, which is 16 storage locations after the actual start
 # of the memory region. All we have to do is go back 16 locations and mark
 # that memory as available, so that the allocate function knows it can use it.
+
 deallocate:
     pushq %rbp
     movq %rsp, %rbp
