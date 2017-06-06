@@ -1,27 +1,27 @@
 .section .data
-#######GLOBAL VARIABLES########
-#This points to the beginning of the memory we are managing
+# ######GLOBAL VARIABLES########
+# This points to the beginning of the memory we are managing
 heap_begin : .quad 0
-#This points to one location past the memory we are managing
+# This points to one location past the memory we are managing
 current_break : .quad 0
 str1: .string "------\nSize_mem: %d\n"
 str2: .string "Adress_m: %d\n"
 str3: .string "Current_: %d\n"
 here: .string "******Here******\n"
 
-######STRUCTURE INFORMATION####
-.equ HEADER_SIZE, 16 #size of space for memory region header
-.equ HDR_AVAIL_OFFSET, 0 #Location of the "available" flag in the header
-.equ HDR_SIZE_OFFSET, 8 #Location of the size field in the header
-.equ ST_MEM_SIZE, 16 #stack position of the memory size to allocate/desallocate
-.equ ST_FIRST_PARAMETER, 16 #stack position of the first parameter
-.equ ST_SECOND_PARAMETER, 24 #stack position of second parameter
+# #####STRUCTURE INFORMATION####
+.equ HEADER_SIZE, 16 # size of space for memory region header
+.equ HDR_AVAIL_OFFSET, 0 # Location of the "available" flag in the header
+.equ HDR_SIZE_OFFSET, 8 # Location of the size field in the header
+.equ ST_MEM_SIZE, 16 # stack position of the memory size to allocate/desallocate
+.equ ST_FIRST_PARAMETER, 16 # stack position of the first parameter
+.equ ST_SECOND_PARAMETER, 24 # stack position of second parameter
 
-###########CONSTANTS###########
-.equ AVAILABLE, 1 #available for giving
-.equ UNAVAILABLE, 0 #space that has been given out
-.equ SYS_BRK, 12 #system call number for the break
-.equ SYS_EXIT, 60 #system call number for exit
+# ##########CONSTANTS###########
+.equ AVAILABLE, 1 # available for giving
+.equ UNAVAILABLE, 0 # space that has been given out
+.equ SYS_BRK, 12 # system call number for the break
+.equ SYS_EXIT, 60 # system call number for exit
 
 .section .text
 .globl _start
@@ -32,72 +32,72 @@ _start:
 
     call allocate_init
 
-    pushq $100 #Size_mem
+    pushq $100 # Size_mem
     call allocate
-    pushq %rax #Adress_m
-    call debug #print
-    popq %rax #remove Adress_m
-    subq $8, %rsp #remove Size_mem
+    pushq %rax # Adress_m
+    call debug # print
+    popq %rax # remove Adress_m
+    subq $8, %rsp # remove Size_mem
 
-    pushq $80 #Size_mem
+    pushq $80 # Size_mem
     call allocate
-    pushq %rax #Adress_m
-    call debug #print
-    popq %rax #remove Adress_m
-    subq $8, %rsp #remove Size_mem
+    pushq %rax # Adress_m
+    call debug # print
+    popq %rax # remove Adress_m
+    subq $8, %rsp # remove Size_mem
 
-	pushq %rax #Size_mem, or in this case: adress to desallocate
+	pushq %rax # Size_mem, or in this case: adress to desallocate
     call deallocate
-    pushq %rax #Adress_m
-    call debug #print
-    popq %rax #remove Adress_m
-    subq $8, %rsp #remove Size_mem
+    pushq %rax # Adress_m
+    call debug # print
+    popq %rax # remove Adress_m
+    subq $8, %rsp # remove Size_mem
 
-    pushq $50 #Size_mem
+    pushq $50 # Size_mem
     call allocate
-    pushq %rax #Adress_m
-    call debug #print
-    popq %rax #remove Adress_m
-    subq $8, %rsp #remove Size_mem
-    
-    pushq $10 #Size_mem
-    call allocate
-    pushq %rax #Adress_m
-    call debug #print
-    popq %rax #remove Adress_m
-    subq $8, %rsp #remove Size_mem
+    pushq %rax # Adress_m
+    call debug # print
+    popq %rax # remove Adress_m
+    subq $8, %rsp # remove Size_mem
 
-	pushq $10 #Size_mem
+    pushq $10 # Size_mem
     call allocate
-    pushq %rax #Adress_m
-    call debug #print
-    popq %rax #remove Adress_m
-    subq $8, %rsp #remove Size_mem
+    pushq %rax # Adress_m
+    call debug # print
+    popq %rax # remove Adress_m
+    subq $8, %rsp # remove Size_mem
 
-    pushq $10 #Size_mem
+	pushq $10 # Size_mem
     call allocate
-    pushq %rax #Adress_m
-    call debug #print
-    popq %rax #remove Adress_m
-    subq $8, %rsp #remove Size_mem
+    pushq %rax # Adress_m
+    call debug # print
+    popq %rax # remove Adress_m
+    subq $8, %rsp # remove Size_mem
+
+    pushq $10 # Size_mem
+    call allocate
+    pushq %rax # Adress_m
+    call debug # print
+    popq %rax # remove Adress_m
+    subq $8, %rsp # remove Size_mem
 
     call allocate_end
 
     pushq $0
-    pushq %rax #Adress_m
-    call debug #print
-    popq %rax #remove Adress_m
-    subq $8, %rsp #remove Size_mem
+    pushq %rax # Adress_m
+    call debug # print
+    popq %rax # remove Adress_m
+    subq $8, %rsp # remove Size_mem
 
     popq %rbp
     movq %rax, %rdi
     movq $SYS_EXIT, %rax
     syscall
 
-##########FUNCTIONS############
-##allocate_init##
-# PURPOSE: call this function to initialize 
-# (specifically, this sets heap_begin and current_break). 
+# #########FUNCTIONS############
+# #allocate_init##
+# PURPOSE: call this function to initialize
+# (specifically, this sets heap_begin and current_break).
 # This has no parameters and no return value.
 allocate_init:
     pushq %rbp
@@ -105,26 +105,26 @@ allocate_init:
 
     movq $SYS_BRK, %rax
     movq $0, %rdi
-    syscall #find out where the break is
+    syscall # find out where the break is
 
-    #%rax now has the last valid address, 
-    #and we want the memory location after that
-    addq $1, %rax 
+    # %rax now has the last valid address,
+    # and we want the memory location after that
+    addq $1, %rax
 
     movq %rax, heap_begin
 
-    #Store the current break as our first address.
-    #This will cause the allocate function to get
-    #more memory from Linux the first time it is run
-    movq %rax, current_break #store the current break
-    
-    popq %rbp #exit the function
-    ret
-##end allocate_init##
+    # Store the current break as our first address.
+    # This will cause the allocate function to get
+    # more memory from Linux the first time it is run
+    movq %rax, current_break # store the current break
 
-##allocate_end##
-# PURPOSE: call this function to ends (specifically, 
-# this sets current_break = heap_begin). 
+    popq %rbp # exit the function
+    ret
+# #end allocate_init##
+
+# #allocate_end##
+# PURPOSE: call this function to ends (specifically,
+# this sets current_break = heap_begin).
 # This has no parameters and no return value.
 allocate_end:
     pushq %rbp
@@ -132,19 +132,19 @@ allocate_end:
 
     movq $SYS_BRK, %rax
     movq heap_begin, %rdi
-    syscall #desallocate heap
+    syscall # desallocate heap
 
-    #if it fail
+    # #if it fail
     cmpq heap_begin, %rax
     jne error
 
     movq %rax, current_break
-    
-    popq %rbp #exit the function
-    ret
-##end allocate_end##
 
-##allocate##
+    popq %rbp # exit the function
+    ret
+# #end allocate_end##
+
+# #allocate##
 # PURPOSE: This function is used to grab a section of memory.
 # It checks to see if there are any free blocks, and, if not,
 # it asks Linux for a new one.
@@ -154,7 +154,7 @@ allocate_end:
 # RETURN VALUE: Returns the address of the allocated memory in %rax.
 # If there is no memory available, it will return 0 in %rax.
 #
-######PROCESSING########
+# #####PROCESSING########
 # Variables used:
 #
 # %rcx - hold the size of the requested memory (parameter (1))
@@ -162,104 +162,104 @@ allocate_end:
 # %rbx - current break position
 # %rdx - size of current memory region
 #
-# We scan through each memory region starting with heap_begin. 
-# We look at the size of each one, and if it has been allocated. 
-# If it’s big enough for the requested size, and its available, 
-# it grabs that one. If it does not find a region large enough, 
+# We scan through each memory region starting with heap_begin.
+# We look at the size of each one, and if it has been allocated.
+# If it’s big enough for the requested size, and its available,
+# it grabs that one. If it does not find a region large enough,
 # it asks Linux for more memory (it moves current_break up)
 allocate:
     pushq %rbp
     movq %rsp, %rbp
 
-    movq ST_MEM_SIZE(%rbp), %rcx #%rcx <- size we are looking for (parameter (1))
-    movq heap_begin, %rax #%rax <- current search location
-    movq current_break, %rbx #%rbx <- current break
+    movq ST_MEM_SIZE(%rbp), %rcx # %rcx <- size we are looking for (parameter (1))
+    movq heap_begin, %rax # %rax <- current search location
+    movq current_break, %rbx # %rbx <- current break
 
 alloc_loop_begin:
-    cmpq %rbx, %rax #need more memory if these are equal
+    cmpq %rbx, %rax # need more memory if these are equal
     je move_break
 
-    movq HDR_SIZE_OFFSET(%rax), %rdx #grab the size of this memory
-    cmpq $UNAVAILABLE, HDR_AVAIL_OFFSET(%rax) #If the space is unavailable,
-    je next_location #go to the next one
-    
-    cmpq %rdx, %rcx #If the space is available, compare the size to the needed size.
-    jle allocate_here #If its big enough, go to allocate_here
+    movq HDR_SIZE_OFFSET(%rax), %rdx # grab the size of this memory
+    cmpq $UNAVAILABLE, HDR_AVAIL_OFFSET(%rax) # If the space is unavailable,
+    je next_location # go to the next one
+
+    cmpq %rdx, %rcx # If the space is available, compare the size to the needed size.
+    jle allocate_here # If its big enough, go to allocate_here
 
 next_location:
-    #The total size of the memory region is the sum of the current
-    #region size (%rdx), plus another 16 bytes for the header
-    #(8 - AVAILABLE/UNAVAILABLE, 8 - size of the region).
-    #So, adding %rdx and $16 to %rax will get the address
-    #of the next memory region.
+    # The total size of the memory region is the sum of the current
+    # region size (%rdx), plus another 16 bytes for the header
+    # (8 - AVAILABLE/UNAVAILABLE, 8 - size of the region).
+    # So, adding %rdx and $16 to %rax will get the address
+    # of the next memory region.
     addq $HEADER_SIZE, %rax
     addq %rdx, %rax
-    jmp alloc_loop_begin #go look at the next location
+    jmp alloc_loop_begin # go look at the next location
 
-allocate_here: #header of the region to allocate is in %rax
-    movq $UNAVAILABLE, HDR_AVAIL_OFFSET(%rax) #mark space as unavailable
-    movq %rcx, HDR_SIZE_OFFSET(%rax) #mark the new size of the block
-    addq $HEADER_SIZE, %rax #%rax (return) <- usable memory adress
+allocate_here: # header of the region to allocate is in %rax
+    movq $UNAVAILABLE, HDR_AVAIL_OFFSET(%rax) # mark space as unavailable
+    movq %rcx, HDR_SIZE_OFFSET(%rax) # mark the new size of the block
+    addq $HEADER_SIZE, %rax # %rax (return) <- usable memory adress
 
-    #call debug_here
+    # call debug_here
 
     cmpq %rdx, %rcx
-    je allocate_here_end #check if leftover memory
+    je allocate_here_end # check if leftover memory
 
-    #call debug_here
+    # call debug_here
 
-    pushq %rax #store return adress
-    addq %rcx, %rax #next available position
-    movq $AVAILABLE, HDR_AVAIL_OFFSET(%rax) #mark space as available
-	subq %rcx, %rdx #available memory size
-	subq $HEADER_SIZE, %rdx #available memory size
-    movq %rcx, HDR_SIZE_OFFSET(%rax) #mark the size of the block
-    popq %rax #restores return adress
+    pushq %rax # store return adress
+    addq %rcx, %rax # next available position
+    movq $AVAILABLE, HDR_AVAIL_OFFSET(%rax) # mark space as available
+	subq %rcx, %rdx # available memory size
+	subq $HEADER_SIZE, %rdx # available memory size
+    movq %rcx, HDR_SIZE_OFFSET(%rax) # mark the size of the block
+    popq %rax # restores return adress
 
 
 allocate_here_end:
     popq %rbp
     ret
 
-move_break: #we have exhausted all addressable memory, so ask for more.
-#%rbx <- current endpoint of the data, %rcx <- current endpoint size
-    #we need to increase %rbx to where we want memory to end, so we
-    addq $HEADER_SIZE, %rbx #add space for the headers structure
-    addq %rcx, %rbx #add space to the break for the data requested
+move_break: # we have exhausted all addressable memory, so ask for more.
+# %rbx <- current endpoint of the data, %rcx <- current endpoint size
+    # we need to increase %rbx to where we want memory to end, so we
+    addq $HEADER_SIZE, %rbx # add space for the headers structure
+    addq %rcx, %rbx # add space to the break for the data requested
 
-    #now its time to ask Linux for more memory
-    pushq %rax #save needed registers
+    # now its time to ask Linux for more memory
+    pushq %rax # save needed registers
     pushq %rcx
     pushq %rbx
 
-    movq %rbx, %rdi #%rdi <- memory size request
+    movq %rbx, %rdi # %rdi <- memory size request
     movq $SYS_BRK, %rax
     syscall
 
-    #Return the new break in %rax, which will be either 0 if it fails,
-    #or it will be equal to or larger than we asked for.
-    cmpq $0, %rax #check for error conditions
+    # Return the new break in %rax, which will be either 0 if it fails,
+    # or it will be equal to or larger than we asked for.
+    cmpq $0, %rax # check for error conditions
     je error
 
-    popq %rbx #restore saved registers
+    popq %rbx # restore saved registers
     popq %rcx
     popq %rax
 
-    movq $UNAVAILABLE, HDR_AVAIL_OFFSET(%rax) #set this memory as unavailable
-    movq %rcx, HDR_SIZE_OFFSET(%rax) #set the size of the memory
-    movq %rbx, current_break #save the new break
-    addq $HEADER_SIZE, %rax #%rax (return) <- actual start of usable memory
+    movq $UNAVAILABLE, HDR_AVAIL_OFFSET(%rax) # set this memory as unavailable
+    movq %rcx, HDR_SIZE_OFFSET(%rax) # set the size of the memory
+    movq %rbx, current_break # save the new break
+    addq $HEADER_SIZE, %rax # %rax (return) <- actual start of usable memory
 
     popq %rbp
     ret
 
 error:
-    movq $0, %rax #on error, we return zero
+    movq $0, %rax # on error, we return zero
     popq %rbp
     ret
-##end allocate##
+# #end allocate##
 
-##deallocate##
+# #deallocate##
 # PURPOSE:
 # The purpose of this function is to give back a region of memory to
 # the pool after we’re done using it. There is no return  value.
@@ -277,32 +277,32 @@ deallocate:
     pushq %rbp
     movq %rsp, %rbp
 
-    movq ST_MEM_SIZE(%rbp), %rax #get the address of the memory to free
-    subq $HEADER_SIZE, %rax #get the pointer to the real beginning of the memory
-    movq $AVAILABLE, HDR_AVAIL_OFFSET(%rax) #mark it as available
+    movq ST_MEM_SIZE(%rbp), %rax # get the address of the memory to free
+    subq $HEADER_SIZE, %rax # get the pointer to the real beginning of the memory
+    movq $AVAILABLE, HDR_AVAIL_OFFSET(%rax) # mark it as available
 
     popq %rbp
     ret
-##end deallocate##
+# #end deallocate##
 
 debug:
 	pushq %rbp
     movq %rsp, %rbp
 
-    #tam
+    # tam
     movq ST_SECOND_PARAMETER(%rbp), %rax
     movq $str1, %rdi
   	movq %rax, %rsi
    	xor %rax, %rax  # tem q ter esse xor (não sei pq)
   	call printf
 
-    #endereco
+    # endereco
     movq ST_FIRST_PARAMETER(%rbp), %rax
     movq $str2, %rdi
   	movq %rax, %rsi
    	xor %rax, %rax  # tem q ter esse xor (não sei pq)
   	call printf
-  	#current end
+  	# current end
   	movq $str3, %rdi
   	movq current_break, %rsi
    	xor %rax, %rax  # tem q ter esse xor (não sei pq)
@@ -316,11 +316,11 @@ debug_here:
     movq %rsp, %rbp
 	pushq %rax
 	pushq %rdi
-	
+
 	movq $here, %rdi
    	xor %rax, %rax  # tem q ter esse xor (não sei pq)
   	call printf
-	
+
 	popq %rdi
   	popq %rax
   	popq %rbp
