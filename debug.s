@@ -4,12 +4,18 @@
 heap_begin : .quad 0
 #This points to one location past the memory we are managing
 current_break : .quad 0
+str1: .string "------\nSize_mem: %d\n"
+str2: .string "Adress_m: %d\n"
+str3: .string "Current_: %d\n"
+here: .string "******Here******\n"
 
 ######STRUCTURE INFORMATION####
 .equ HEADER_SIZE, 16 #size of space for memory region header
 .equ HDR_AVAIL_OFFSET, 0 #Location of the "available" flag in the header
 .equ HDR_SIZE_OFFSET, 8 #Location of the size field in the header
-.equ ST_MEM_SIZE, 16 #stack position of the memory size to allocate
+.equ ST_MEM_SIZE, 16 #stack position of the memory size to allocate/desallocate
+.equ ST_FIRST_PARAMETER, 16 #stack position of the first parameter
+.equ ST_SECOND_PARAMETER, 24 #stack position of second parameter
 
 ###########CONSTANTS###########
 .equ AVAILABLE, 1 #available for giving
@@ -26,24 +32,65 @@ _start:
 
     call allocate_init
 
-    pushq $100
+    pushq $100 #Size_mem
     call allocate
-    subq $8, %rsp
+    pushq %rax #Adress_m
+    call debug #print
+    popq %rax #remove Adress_m
+    subq $8, %rsp #remove Size_mem
 
-    pushq $80
+    pushq $80 #Size_mem
     call allocate
-    subq $8, %rsp
+    pushq %rax #Adress_m
+    call debug #print
+    popq %rax #remove Adress_m
+    subq $8, %rsp #remove Size_mem
 
-    pushq %rax
+	pushq %rax #Size_mem, or in this case: adress to desallocate
     call deallocate
-    subq $8, %rsp
+    pushq %rax #Adress_m
+    call debug #print
+    popq %rax #remove Adress_m
+    subq $8, %rsp #remove Size_mem
 
-    pushq $50
+    pushq $50 #Size_mem
     call allocate
-    subq $8, %rsp
+    pushq %rax #Adress_m
+    call debug #print
+    popq %rax #remove Adress_m
+    subq $8, %rsp #remove Size_mem
+    
+    pushq $10 #Size_mem
+    call allocate
+    pushq %rax #Adress_m
+    call debug #print
+    popq %rax #remove Adress_m
+    subq $8, %rsp #remove Size_mem
+
+	pushq $10 #Size_mem
+    call allocate
+    pushq %rax #Adress_m
+    call debug #print
+    popq %rax #remove Adress_m
+    subq $8, %rsp #remove Size_mem
+
+    pushq $10 #Size_mem
+    call allocate
+    pushq %rax #Adress_m
+    call debug #print
+    popq %rax #remove Adress_m
+    subq $8, %rsp #remove Size_mem
+
+    call allocate_end
+
+    pushq $0
+    pushq %rax #Adress_m
+    call debug #print
+    popq %rax #remove Adress_m
+    subq $8, %rsp #remove Size_mem
 
     popq %rbp
-    movq current_break, %rdi
+    movq %rax, %rdi
     movq $SYS_EXIT, %rax
     syscall
 
@@ -74,6 +121,28 @@ allocate_init:
     popq %rbp #exit the function
     ret
 ##end allocate_init##
+
+##allocate_end##
+# PURPOSE: call this function to ends (specifically, 
+# this sets current_break = heap_begin). 
+# This has no parameters and no return value.
+allocate_end:
+    pushq %rbp
+    movq %rsp, %rbp
+
+    movq $SYS_BRK, %rax
+    movq heap_begin, %rdi
+    syscall #desallocate heap
+
+    #if it fail
+    cmpq heap_begin, %rax
+    jne error
+
+    movq %rax, current_break
+    
+    popq %rbp #exit the function
+    ret
+##end allocate_end##
 
 ##allocate##
 # PURPOSE: This function is used to grab a section of memory.
@@ -129,8 +198,26 @@ next_location:
 
 allocate_here: #header of the region to allocate is in %rax
     movq $UNAVAILABLE, HDR_AVAIL_OFFSET(%rax) #mark space as unavailable
+    movq %rcx, HDR_SIZE_OFFSET(%rax) #mark the new size of the block
     addq $HEADER_SIZE, %rax #%rax (return) <- usable memory adress
 
+    #call debug_here
+
+    cmpq %rdx, %rcx
+    je allocate_here_end #check if leftover memory
+
+    #call debug_here
+
+    pushq %rax #store return adress
+    addq %rcx, %rax #next available position
+    movq $AVAILABLE, HDR_AVAIL_OFFSET(%rax) #mark space as available
+	subq %rcx, %rdx #available memory size
+	subq $HEADER_SIZE, %rdx #available memory size
+    movq %rcx, HDR_SIZE_OFFSET(%rax) #mark the size of the block
+    popq %rax #restores return adress
+
+
+allocate_here_end:
     popq %rbp
     ret
 
@@ -199,6 +286,42 @@ deallocate:
 ##end deallocate##
 
 debug:
-    movq (%rax), %rdi
-    movq $SYS_EXIT, %rax
-    syscall
+	pushq %rbp
+    movq %rsp, %rbp
+
+    #tam
+    movq ST_SECOND_PARAMETER(%rbp), %rax
+    movq $str1, %rdi
+  	movq %rax, %rsi
+   	xor %rax, %rax  # tem q ter esse xor (não sei pq)
+  	call printf
+
+    #endereco
+    movq ST_FIRST_PARAMETER(%rbp), %rax
+    movq $str2, %rdi
+  	movq %rax, %rsi
+   	xor %rax, %rax  # tem q ter esse xor (não sei pq)
+  	call printf
+  	#current end
+  	movq $str3, %rdi
+  	movq current_break, %rsi
+   	xor %rax, %rax  # tem q ter esse xor (não sei pq)
+  	call printf
+
+  	popq %rbp
+    ret
+
+debug_here:
+	pushq %rbp
+    movq %rsp, %rbp
+	pushq %rax
+	pushq %rdi
+	
+	movq $here, %rdi
+   	xor %rax, %rax  # tem q ter esse xor (não sei pq)
+  	call printf
+	
+	popq %rdi
+  	popq %rax
+  	popq %rbp
+    ret
