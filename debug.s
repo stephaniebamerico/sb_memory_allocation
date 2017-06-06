@@ -40,7 +40,7 @@ _start:
     popq %rax #remove Adress_m
     subq $8, %rsp #remove Size_mem
 
-    pushq $80 #Size_mem
+    pushq $180 #Size_mem
     call allocate
     pushq %rax #Adress_m
     call debug #print
@@ -54,28 +54,28 @@ _start:
     popq %rax #remove Adress_m
     subq $8, %rsp #remove Size_mem
 
-    pushq $50 #Size_mem
+    pushq $100 #Size_mem
     call allocate
     pushq %rax #Adress_m
     call debug #print
     popq %rax #remove Adress_m
     subq $8, %rsp #remove Size_mem
     
-    pushq $10 #Size_mem
+    pushq $65 #Size_mem
     call allocate
     pushq %rax #Adress_m
     call debug #print
     popq %rax #remove Adress_m
     subq $8, %rsp #remove Size_mem
 
-	pushq $10 #Size_mem
+    pushq $64 #Size_mem
     call allocate
     pushq %rax #Adress_m
     call debug #print
     popq %rax #remove Adress_m
     subq $8, %rsp #remove Size_mem
 
-    pushq $10 #Size_mem
+    pushq $100 #Size_mem
     call allocate
     pushq %rax #Adress_m
     call debug #print
@@ -208,8 +208,10 @@ allocate_here: #header of the region to allocate is in %rax
 
     movq %rcx, HDR_SIZE_OFFSET(%rax) #mark the new size of the block allocated
     pushq %rax #store return adress
-    
+
+    addq $HEADER_SIZE, %rax
     addq %rcx, %rax #next available position
+
     movq $AVAILABLE, HDR_AVAIL_OFFSET(%rax) #mark space as available
     movq %rdx, HDR_SIZE_OFFSET(%rax) #mark the new size of the block leftover
     
