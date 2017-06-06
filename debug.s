@@ -8,6 +8,7 @@ str1: .string "------\nSize_mem: %d\n"
 str2: .string "Adress_m: %d\n"
 str3: .string "Current_: %d\n"
 here: .string "******Here******\n"
+n: .string "* N: %d *\n"
 
 ######STRUCTURE INFORMATION####
 .equ HEADER_SIZE, 16 #size of space for memory region header
@@ -198,26 +199,25 @@ next_location:
 
 allocate_here: #header of the region to allocate is in %rax
     movq $UNAVAILABLE, HDR_AVAIL_OFFSET(%rax) #mark space as unavailable
-    movq %rcx, HDR_SIZE_OFFSET(%rax) #mark the new size of the block
-    addq $HEADER_SIZE, %rax #%rax (return) <- usable memory adress
 
-    #call debug_here
+    subq %rcx, %rdx
+	subq $HEADER_SIZE, %rdx #leftover memory
 
-    cmpq %rdx, %rcx
-    je allocate_here_end #check if leftover memory
+    cmpq $26, %rdx
+    jl allocate_here_end #check if leftover memory < 26
 
-    #call debug_here
-
+    movq %rcx, HDR_SIZE_OFFSET(%rax) #mark the new size of the block allocated
     pushq %rax #store return adress
+    
     addq %rcx, %rax #next available position
     movq $AVAILABLE, HDR_AVAIL_OFFSET(%rax) #mark space as available
-	subq %rcx, %rdx #available memory size
-	subq $HEADER_SIZE, %rdx #available memory size
-    movq %rcx, HDR_SIZE_OFFSET(%rax) #mark the size of the block
+    movq %rdx, HDR_SIZE_OFFSET(%rax) #mark the new size of the block leftover
+    
     popq %rax #restores return adress
 
-
 allocate_here_end:
+    addq $HEADER_SIZE, %rax #%rax (return) <- usable memory adress
+
     popq %rbp
     ret
 
@@ -308,20 +308,5 @@ debug:
    	xor %rax, %rax  # tem q ter esse xor (não sei pq)
   	call printf
 
-  	popq %rbp
-    ret
-
-debug_here:
-	pushq %rbp
-    movq %rsp, %rbp
-	pushq %rax
-	pushq %rdi
-	
-	movq $here, %rdi
-   	xor %rax, %rax  # tem q ter esse xor (não sei pq)
-  	call printf
-	
-	popq %rdi
-  	popq %rax
   	popq %rbp
     ret
