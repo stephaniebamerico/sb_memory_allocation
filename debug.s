@@ -7,8 +7,10 @@ current_break : .quad 0
 str1: .string "------\nSize_mem: %d\n"
 str2: .string "Adress_m: %d\n"
 str3: .string "Current_: %d\n"
+str4: .string "Avaible_: %d\n"
 here: .string "******Here******\n"
 n: .string "* N: %d *\n"
+mem_avaible: .quad 0
 
 ######STRUCTURE INFORMATION####
 .equ HEADER_SIZE, 16 #size of space for memory region header
@@ -34,6 +36,13 @@ _start:
     call allocate_init
 
     pushq $4000 #Size_mem
+    call allocate
+    pushq %rax #Adress_m
+    call debug #print
+    popq %rax #remove Adress_m
+    subq $8, %rsp #remove Size_mem
+
+    pushq $50 #Size_mem
     call allocate
     pushq %rax #Adress_m
     call debug #print
@@ -82,6 +91,20 @@ _start:
     popq %rax #remove Adress_m
     subq $8, %rsp #remove Size_mem
 
+    pushq $7000 #Size_mem
+    call allocate
+    pushq %rax #Adress_m
+    call debug #print
+    popq %rax #remove Adress_m
+    subq $8, %rsp #remove Size_mem
+
+    pushq $1160 #Size_mem
+    call allocate
+    pushq %rax #Adress_m
+    call debug #print
+    popq %rax #remove Adress_m
+    subq $8, %rsp #remove Size_mem
+
     call allocate_end
 
     popq %rbp
@@ -112,6 +135,7 @@ allocate_init:
     #This will cause the allocate function to get
     #more memory from Linux the first time it is run
     movq %rax, current_break #store the current break
+    movq %rax, mem_avaible
     
     popq %rbp #exit the function
     ret
@@ -214,6 +238,11 @@ allocate_here: #header of the region to allocate is in %rax
 allocate_here_end:
     addq $HEADER_SIZE, %rax #%rax (return) <- usable memory adress
 
+    movq current_break, %rdi #memory avaible = heap_size
+    subq %rax, %rdi			 #				   - memory request begin
+    subq %rcx, %rdi			 #				   - memory request
+    movq %rdi, mem_avaible
+
     popq %rbp
     ret
 
@@ -284,6 +313,10 @@ deallocate:
     subq $HEADER_SIZE, %rax #get the pointer to the real beginning of the memory
     movq $AVAILABLE, HDR_AVAIL_OFFSET(%rax) #mark it as available
 
+    movq mem_avaible, %rdi #add to avaible memory 
+    addq HDR_SIZE_OFFSET(%rax), %rdi
+    movq %rdi, mem_avaible
+
     popq %rbp
     ret
 ##end deallocate##
@@ -298,8 +331,7 @@ debug:
     movq %rax, %rsi
     xor %rax, %rax  # tem q ter esse xor (não sei pq)
     call printf
-
-    #endereco
+    #adress
     movq ST_FIRST_PARAMETER(%rbp), %rax
     movq $str2, %rdi
     movq %rax, %rsi
@@ -308,6 +340,11 @@ debug:
     #current end
     movq $str3, %rdi
     movq current_break, %rsi
+    xor %rax, %rax  # tem q ter esse xor (não sei pq)
+    call printf
+    #memory avaible
+    movq $str4, %rdi
+    movq mem_avaible, %rsi
     xor %rax, %rax  # tem q ter esse xor (não sei pq)
     call printf
 
