@@ -1,113 +1,174 @@
+.section .data
+	.equ pedido, -8
+	.equ novo_bloco, -16
+	.equ menor_bloco, -24
+	.equ menor_dif, -32
+
 .section .text
 .globl meuMalloc
 
-# #meuMalloc##
-# PURPOSE: This function is used to grab a section of memory.
-# It checks to see if there are any free blocks, and, if not,
-# it asks Linux for a new one.
-#
-# PARAMETERS: (1) The size of the memory block to meuMalloc
-#
-# RETURN VALUE: Returns the address of the allocated memory in %rax.
-# If there is no memory available, it will return 0 in %rax.
-#
-# #####PROCESSING########
-# Variables used:
-#
-# %rcx - hold the size of the requested memory (parameter (1))
-# %rax - current memory region being examined
-# %rbx - current break position
-# %rdx - size of current memory region
-#
-# We scan through each memory region starting with heap_begin.
-# We look at the size of each one, and if it has been allocated.
-# If it’s big enough for the requested size, and its available,
-# it grabs that one. If it does not find a region large enough,
-# it asks Linux for more memory (it moves current_break up)
 meuMalloc:
-    pushq %rbp
-    movq %rsp, %rbp
+	pushq %rbp
+	movq %rsp, %rbp
+	subq 32, %rsp
 
-    movq ST_MEM_SIZE(%rbp), %rcx # %rcx <- size we are looking for (parameter (1))
-    movq heap_begin, %rax # %rax <- current search location
-    movq current_break, %rbx # %rbx <- current break
-
-alloc_loop_begin:
-    cmpq %rbx, %rax # need more memory if these are equal
-    je move_break
-
-    movq HDR_SIZE_OFFSET(%rax), %rdx # grab the size of this memory
-    cmpq $UNAVAILABLE, HDR_AVAIL_OFFSET(%rax) # If the space is unavailable,
-    je next_location # go to the next one
-
-    cmpq %rdx, %rcx # If the space is available, compare the size to the needed size.
-    jle allocate_here # If its big enough, go to allocate_here
-
-next_location:
-    # The total size of the memory region is the sum of the current
-    # region size (%rdx), plus another 16 bytes for the header
-    # (8 - AVAILABLE/UNAVAILABLE, 8 - size of the region).
-    # So, adding %rdx and $16 to %rax will get the address
-    # of the next memory region.
-    addq $HEADER_SIZE, %rax
-    addq %rdx, %rax
-    jmp alloc_loop_begin # go look at the next location
-
-allocate_here: # header of the region to meuMalloc is in %rax
-    movq $UNAVAILABLE, HDR_AVAIL_OFFSET(%rax) # mark space as unavailable
-    movq %rcx, HDR_SIZE_OFFSET(%rax) # mark the new size of the block
-    addq $HEADER_SIZE, %rax # %rax (return) <- usable memory adress
-
-    cmpq %rdx, %rcx
-    je allocate_here_end # check if leftover memory
-
-    pushq %rax # store return adress
-    addq %rcx, %rax # next available position
-    movq $AVAILABLE, HDR_AVAIL_OFFSET(%rax) # mark space as available
-	subq %rcx, %rdx # available memory size
-	subq $HEADER_SIZE, %rdx # available memory size
-    movq %rcx, HDR_SIZE_OFFSET(%rax) # mark the size of the block
-    popq %rax # restores return adress
+	# Algoritmo: (first fit)
+	#	PERCORRE lista_livre COM bloco_atual
+	#		SE bloco_atual.tam > pedido
+	#			bloco_div = divide(bloco_atual,pedido)
+	#			insere(bloco_atual,lista_ocupado)
+	#			SE bloco_div != NULL
+	#				insere(bloco_div,lista_livre)
+	#			RETORNA bloco_atual
+	#
+	#	novo_bloco = aloca(4096)
+	#	ENQUANTO novo_bloco.tam < pedido
+	#		aux = aloca(4096)
+	#		novo_bloco = merge(novo_bloco,aux)
+	#	bloco_div = divide(novo_bloco,pedido)
+	#	insere(novo_bloco,lista_ocupado)
+	#	SE bloco_div != NULL
+	#		insere(bloco_div,lista_livre)
+	#	RETORNA novo_bloco
 
 
-allocate_here_end:
-    popq %rbp
-    ret
 
-move_break: # we have exhausted all addressable memory, so ask for more.
-# %rbx <- current endpoint of the data, %rcx <- current endpoint size
-    # we need to increase %rbx to where we want memory to end, so we
-    addq $HEADER_SIZE, %rbx # add space for the headers structure
-    addq %rcx, %rbx # add space to the break for the data requested
+	# Algoritmo: (best fit)
+	# parte1:
+	#	bloco_atual = lista_livre
+	#	ENQUANTO (bloco_atual.tam <= pedido) (+) SE bloco_atual == NULL : GOTO parte2
+	#		bloco_atual = bloco_atual.prox
+	#	menor_bloco = bloco_atual
+	#	menor_dif = bloco_atual.tam - pedido
+	#
+	#	ENQUANTO bloco_atual != NULL
+	#		SE bloco_atual.tam > pedido && (bloco_atual.tam - pedido) < menor_dif
+	#			menor_bloco = bloco_atual
+	#			menor_dif = (bloco_atual.tam - pedido)
+	#		bloco_atual = bloco_atual.prox
+	#
+	#	bloco_div = divide(bloco_atual,pedido)
+	#	insere(bloco_atual,lista_ocupado)
+	#	SE bloco_div != NULL
+	#		insere(bloco_div,lista_livre)
+	#	RETORNA bloco_atual
+	#
+	# parte2:
+	#	novo_bloco = aloca(4096)
+	#	ENQUANTO novo_bloco.tam < pedido
+	#		aux = aloca(4096)
+	#		novo_bloco = merge(novo_bloco,aux)
+	#	bloco_div = divide(novo_bloco,pedido)
+	#	insere(novo_bloco,lista_ocupado)
+	#	SE bloco_div != NULL
+	#		insere(bloco_div,lista_livre)
+	#	RETORNA novo_bloco
+part1:
+	movq %rdi, pedido(%rbp)
+	movq free_list, %rcx # %rcx := bloco_atual
 
-    # now its time to ask Linux for more memory
-    pushq %rax # save needed registers
-    pushq %rcx
-    pushq %rbx
+while1:
+	# SE bloco_atual == NULL : GOTO parte2
+	cmpq $0, %rcx
+	je part2
+	# ENQUANTO (bloco_atual.tam <= pedido)
+	cmpq pedido(%rbp), BL_SIZ_OFFSET(%rcx)
+	jg end_while1
+	# 	bloco_atual = bloco_atual.prox
+	movq BL_NXT_OFFSET(%rcx), %rcx
+	jmp while1
+end_while1:
 
-    movq %rbx, %rdi # %rdi <- memory size request
-    movq $SYS_BRK, %rax
-    syscall
+	# menor_bloco = bloco_atual
+	movq %rcx, menor_bloco(%rbp)
+	# menor_dif = bloco_atual.tam - pedido
+	movq BL_SIZ_OFFSET(%rcx), %rax
+	subq pedido(%rbp), %rax
+	movq %rax, menor_dif(%rbp)
 
-    # Return the new break in %rax, which will be either 0 if it fails,
-    # or it will be equal to or larger than we asked for.
-    cmpq $0, %rax # check for error conditions
-    je error
+while2:
+	# ENQUANTO bloco_atual != NULL
+	cmpq $0, %rcx
+	je end_while2
+if1:
+	# 	SE bloco_atual.tam > pedido
+	cmpq pedido(%rbp), BL_SIZ_OFFSET(%rcx)
+	jle end_if1
+	# 	SE (bloco_atual.tam - pedido) < menor_dif
+	movq BL_SIZ_OFFSET(%rcx), %rax
+	subq pedido(%rbp), %rax
+	cmpq menor_dif(%rbp), %rax
+	jge end_if1
+	#		menor_bloco = bloco_atual
+	movq %rcx, menor_bloco(%rbp)
+	#		menor_dif = (bloco_atual.tam - pedido)
+	movq %rax, menor_dif(%rbp)
+end_if1:
+	# 	bloco_atual = bloco_atual.prox
+	movq BL_NXT_OFFSET(%rcx), %rcx
+	jmp while2
+end_while2:
 
-    popq %rbx # restore saved registers
-    popq %rcx
-    popq %rax
+	# bloco_div = divide(bloco_atual,pedido)
+	pushq %rcx # salvar o valor de bloco_atual
+	movq %rcx, %rdi
+	movq pedido(%rbp), %rsi
+	call aux_divide
+	popq %rcx
 
-    movq $UNAVAILABLE, HDR_AVAIL_OFFSET(%rax) # set this memory as unavailable
-    movq %rcx, HDR_SIZE_OFFSET(%rax) # set the size of the memory
-    movq %rbx, current_break # save the new break
-    addq $HEADER_SIZE, %rax # %rax (return) <- actual start of usable memory
+	# insere(bloco_atual,lista_ocupado)
+	pushq %rax # salvar o valor de bloco_div
+	pushq %rcx # salvar o valor de bloco_atual
+	movq %rcx, %rdi
+	movq occ_list, %rsi
+	call aux_insert
+	popq %rcx
+	popq %rax
 
-    popq %rbp
-    ret
+if2:
+	# SE bloco_div != NULL
+	cmp $0, %rax
+	je end_if2
+	#	insere(bloco_div,lista_livre)
+	pushq %rcx
+	movq %rax, %rdi
+	movq free_list, %rsi
+	call aux_insert
+	popq %rcx
+end_if2:
 
-error:
-    movq $0, %rax # on error, we return zero
-    popq %rbp
-    ret
-##end meuMalloc##
+	# RETORNA bloco_atual
+	movq %rcx, %rax
+	addq 32, %rsp
+	popq %rbp
+	ret
+
+part2:
+	# novo_bloco = aloca(4096)
+	movq $4096, %rdi
+	call aux_alloc_brk
+	movq %rax, novo_bloco(%rbp)
+
+while3:
+	# ENQUANTO novo_bloco.tam < pedido
+	cmpq pedido(%rbp), BL_SIZ_OFFSET(%rax)
+	jg end_while3
+
+	# 	aux = aloca(4096)
+	pushq %rax # salvar o endereço de novo_bloco
+	movq $4096, %rdi
+	call aux_alloc_brk
+	movq %rax, %rbx # %rbx := aux
+	popq %rax
+
+ 	# novo_bloco = merge(novo_bloco,aux)
+	movq %rax, %rdi
+	movq %rbx, %rsi
+	call aux_merge
+
+
+
+
+	addq 32, %rsp
+	popq %rbp
+	ret
