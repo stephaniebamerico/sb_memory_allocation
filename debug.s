@@ -259,7 +259,7 @@ error:
     ret
 # #end allocate##
 
-# #deallocate##
+##deallocate##
 # PURPOSE:
 # The purpose of this function is to give back a region of memory to
 # the pool after we’re done using it. There is no return  value.
@@ -283,7 +283,7 @@ deallocate:
 
     popq %rbp
     ret
-# #end deallocate##
+##end deallocate##
 
 debug:
 	pushq %rbp
