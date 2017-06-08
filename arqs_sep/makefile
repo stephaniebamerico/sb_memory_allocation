@@ -1,4 +1,4 @@
-rog:
+prog:
 	as inicia_finaliza.s -o inicia_finaliza.o
 	as def.s -o def.o
 	as prog.s -o prog.o

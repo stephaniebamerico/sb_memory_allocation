@@ -1,42 +1,51 @@
 .section .data
 
+.globl free_list
+.globl occ_list
 .globl heap_begin
 .globl current_break
 
-.globl HEADER_SIZE
-.globl HDR_AVAIL_OFFSET
-.globl HDR_SIZE_OFFSET
+	free_list: .quad 0
+	occ_list: .quad 0
+	heap_begin: .quad 0
+	current_break: .quad 0
 
-.globl ST_MEM_SIZE
+.globl BL_SIZ_OFFSET
+.globl BL_OCC_OFFSET
+.globl BL_NXT_OFFSET
+.globl BL_HEAD_SIZE
 
-.globl AVAILABLE
-.globl UNAVAILABLE
+.globl BL_OCC
+.globl BL_FREE
+
 .globl SYS_BRK
 .globl SYS_EXIT
 
-# ######GLOBAL VARIABLES########
-# This points to the beginning of the memory we are managing
-heap_begin : .quad 0
-# This points to one location past the memory we are managing
-current_break : .quad 0
+	.equ BL_SIZ_OFFSET, -8
+	.equ BL_OCC_OFFSET, -16
+	.equ BL_NXT_OFFSET, -24
+	.equ BL_HEAD_SIZE, 24
 
-# #####STRUCTURE INFORMATION####
-.equ HEADER_SIZE, 16 # size of space for memory region header
-.equ HDR_AVAIL_OFFSET, 0 # Location of the "available" flag in the header
-.equ HDR_SIZE_OFFSET, 8 # Location of the size field in the header
-.equ ST_MEM_SIZE, 16 # stack position of the memory size to allocate/desallocate
+	.equ BL_OCC, 1
+	.equ BL_FREE, 0
 
-# ##########CONSTANTS###########
-.equ AVAILABLE, 1 # available for giving
-.equ UNAVAILABLE, 0 # space that has been given out
-.equ SYS_BRK, 12 # system call number for the break
-.equ SYS_EXIT, 60 # system call number for exit
+
+	.equ SYS_BRK, 12
+	.equ SYS_EXIT, 60
 
 .section .text
 .globl error
+.globl error32
 
-# Rotina de erro : retorna 0
+# rotina de erro sem variáveis locais
 error:
-	movq $0, %rax
-	popq %rbp
-	ret
+    movq $0, %rax # retorna 0
+    popq %rbp
+    ret
+
+# rotina de erro com 4 variáveis locais
+error32:
+	addq 32, %rsp
+    movq $0, %rax # retorna 0
+    popq %rbp
+    ret

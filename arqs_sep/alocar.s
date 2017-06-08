@@ -114,14 +114,36 @@ end_while2:
 	movq %rcx, %rdi
 	movq pedido(%rbp), %rsi
 	call aux_divide
+
+	# checagem de erro
+	cmpq $0, %rax
+	je error32
+
 	popq %rcx
 
-	# insere(bloco_atual,lista_ocupado)
+	# remove(bloco_atual,lista_livre)
 	pushq %rax # salvar o valor de bloco_div
 	pushq %rcx # salvar o valor de bloco_atual
 	movq %rcx, %rdi
-	movq occ_list, %rsi
+	movq $occ_list, %rsi
+	call aux_remove
+
+	# checagem de erro
+	cmpq $0, %rax
+	je error32
+
+	popq %rcx
+
+	# insere(bloco_atual,lista_ocupado)
+	pushq %rcx # salvar o valor de bloco_atual
+	movq %rcx, %rdi
+	movq $occ_list, %rsi
 	call aux_insert
+
+	# checagem de erro
+	cmpq $0, %rax
+	je error32
+
 	popq %rcx
 	popq %rax
 
@@ -132,10 +154,18 @@ if2:
 	#	insere(bloco_div,lista_livre)
 	pushq %rcx
 	movq %rax, %rdi
-	movq free_list, %rsi
+	movq $free_list, %rsi
 	call aux_insert
+
+	# checagem de erro
+	cmpq $0, %rax
+	je error32
+
 	popq %rcx
 end_if2:
+
+	# bloco_atual.occ = ocupado
+	movq BL_OCC, BL_OCC_OFFSET(%rcx)
 
 	# RETORNA bloco_atual
 	movq %rcx, %rax
@@ -147,6 +177,11 @@ part2:
 	# novo_bloco = aloca(4096)
 	movq $4096, %rdi
 	call aux_alloc_brk
+
+	# checagem de erro
+	cmpq $0, %rax
+	je error32
+
 	movq %rax, novo_bloco(%rbp)
 
 while3:
@@ -158,16 +193,58 @@ while3:
 	pushq %rax # salvar o endereço de novo_bloco
 	movq $4096, %rdi
 	call aux_alloc_brk
+
+	# checagem de erro
+	cmpq $0, %rax
+	je error32
+
+	# 	novo_bloco = merge(novo_bloco,aux)
 	movq %rax, %rbx # %rbx := aux
 	popq %rax
 
- 	# novo_bloco = merge(novo_bloco,aux)
 	movq %rax, %rdi
 	movq %rbx, %rsi
 	call aux_merge
 
+	# checagem de erro
+	cmpq $0, %rax
+	je error32
+
+end_while3:
 
 
+
+	# bloco_div = divide(novo_bloco,pedido)
+	pushq %rax # salvar o valor de novo_bloco
+	movq %rax, %rdi
+	movq pedido(%rbp), %rsi
+	call aux_divide
+	movq %rax, %rbx # %rbx := bloco_div
+	popq %rax
+
+	# insere(novo_bloco,lista_ocupado)
+	pushq %rax # salvar valor de novo_bloco
+	pushq %rbx # salvar valor de bloco_div
+	movq %rax, %rdi
+	movq $occ_list, %rsi
+	call aux_insert
+	popq %rbx
+
+if3:
+	# SE bloco_div != NULL
+	cmpq $0, %rbx
+	je end_if3
+
+	# 	insere(bloco_div,lista_livre)
+	movq %rbx, %rdi
+	movq $free_list, %rsi
+	call aux_insert
+end_if3:
+
+	popq %rax # recupera valor de novo_bloco
+
+	# novo_bloco.occ = ocupado
+	movq BL_OCC, BL_OCC_OFFSET(%rax)
 
 	addq 32, %rsp
 	popq %rbp
