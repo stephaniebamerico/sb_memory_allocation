@@ -29,10 +29,13 @@ if1:
 	jne end_if1
 
 	#	A.prox = B.prox
-	movq BL_NXT_OFFSET(%rbx), BL_NXT_OFFSET(%rax)
+	movq BL_NXT_OFFSET(%rbx), %r8
+	movq %r8, BL_NXT_OFFSET(%rax)
 	#	A.tam = B.tam + BL_HEAD_SIZE
-	addq BL_HEAD_SIZE, BL_SIZ_OFFSET(%rax)
-	addq BL_SIZ_OFFSET(%rbx), BL_SIZ_OFFSET(%rax)
+	movq BL_HEAD_SIZE, %r8
+	addq %r8, BL_SIZ_OFFSET(%rax)
+	movq BL_SIZ_OFFSET(%rbx), %r8
+	addq %r8, BL_SIZ_OFFSET(%rax)
 
 	# como o novo_bloco tem o endr de A, e A já está em %rax
 	popq %rbp
@@ -67,7 +70,8 @@ if2:
 	addq BL_HEAD_SIZE, %rax
 
 	#	B.prox = A.prox
-	movq BL_NXT_OFFSET(%rbx), BL_NXT_OFFSET(%rax)
+	movq BL_NXT_OFFSET(%rbx), %r8
+	movq %r8, BL_NXT_OFFSET(%rax)
 
 	#	A.prox = B
 	movq %rax, BL_NXT_OFFSET(%rbx)
@@ -75,11 +79,13 @@ if2:
 	#	B.tam = A.tam - (tam + BL_HEAD_SIZE)
 	movq %rcx, %rdx
 	addq BL_HEAD_SIZE, %rdx
-	movq BL_SIZ_OFFSET(%rbx), BL_SIZ_OFFSET(%rax)
+	movq BL_SIZ_OFFSET(%rbx), %r8
+	movq %r8, BL_SIZ_OFFSET(%rax)
 	subq %rdx, BL_SIZ_OFFSET(%rax)
 
 	#	B.occ = livre
-	movq BL_FREE, BL_OCC_OFFSET(%rax)
+	movq BL_FREE, %r8
+	movq %r8, BL_OCC_OFFSET(%rax)
 
 	popq %rbp
 	ret
@@ -169,7 +175,8 @@ while1_err_end:
 while1_end:
 
 	# novo_bloco.prox = bloco_atual.prox
-	movq BL_NXT_OFFSET(%rcx), BL_NXT_OFFSET(%rax)
+	movq BL_NXT_OFFSET(%rcx), %r8
+	movq %r8, BL_NXT_OFFSET(%rax)
 	# bloco_atual.prox = novo_bloco
 	movq %rax, BL_NXT_OFFSET(%rcx)
 
@@ -214,7 +221,8 @@ aux_alloc_brk:
 	movq %rdx, BL_SIZ_OFFSET(%rax)
 
 	# novo_bloco.occ = livre
-	movq BL_FREE, BL_OCC_OFFSET(%rax)
+	movq BL_FREE, %r8
+	movq %r8, BL_OCC_OFFSET(%rax)
 	# novo_bloco.prox = NULL
 	movq $0, BL_NXT_OFFSET(%rax)
 
@@ -238,7 +246,8 @@ if_6:
 	jne end_if6
 
 	# 	lista = &A.prox
-	movq BL_NXT_OFFSET(%rbx), (%rsi)
+	movq BL_NXT_OFFSET(%rbx), %r8
+	movq %r8, (%rsi)
 
 	movq $1, %rax
 	popq %rbp
@@ -259,7 +268,8 @@ while2:
 end_while2:
 
 	# bloco_atual.prox = A.prox
-	movq BL_NXT_OFFSET(%rbx), BL_NXT_OFFSET(%rcx)
+	movq BL_NXT_OFFSET(%rbx), %r8
+	movq %r8, BL_NXT_OFFSET(%rcx)
 
 	# A.prox = NULL
 	movq $0, BL_NXT_OFFSET(%rbx)

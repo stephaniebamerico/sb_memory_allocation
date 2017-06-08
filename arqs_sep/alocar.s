@@ -4,6 +4,9 @@
 	.equ menor_bloco, -24
 	.equ menor_dif, -32
 
+	str1: .string "parte1"
+	str2: .string "parte2"
+
 .section .text
 .globl meuMalloc
 
@@ -72,7 +75,8 @@ while1:
 	cmpq $0, %rcx
 	je part2
 	# ENQUANTO (bloco_atual.tam <= pedido)
-	cmpq pedido(%rbp), BL_SIZ_OFFSET(%rcx)
+	movq pedido(%rbp), %r8
+	cmpq %r8, BL_SIZ_OFFSET(%rcx)
 	jg end_while1
 	# 	bloco_atual = bloco_atual.prox
 	movq BL_NXT_OFFSET(%rcx), %rcx
@@ -92,7 +96,8 @@ while2:
 	je end_while2
 if1:
 	# 	SE bloco_atual.tam > pedido
-	cmpq pedido(%rbp), BL_SIZ_OFFSET(%rcx)
+	movq pedido(%rbp), %r8
+	cmpq %r8, BL_SIZ_OFFSET(%rcx)
 	jle end_if1
 	# 	SE (bloco_atual.tam - pedido) < menor_dif
 	movq BL_SIZ_OFFSET(%rcx), %rax
@@ -165,7 +170,8 @@ if2:
 end_if2:
 
 	# bloco_atual.occ = ocupado
-	movq BL_OCC, BL_OCC_OFFSET(%rcx)
+	movq BL_OCC, %r8
+	movq %r8, BL_OCC_OFFSET(%rcx)
 
 	# RETORNA bloco_atual
 	movq %rcx, %rax
@@ -186,7 +192,8 @@ part2:
 
 while3:
 	# ENQUANTO novo_bloco.tam < pedido
-	cmpq pedido(%rbp), BL_SIZ_OFFSET(%rax)
+	movq pedido(%rbp), %r8
+	cmpq %r8, BL_SIZ_OFFSET(%rax)
 	jg end_while3
 
 	# 	aux = aloca(4096)
@@ -244,7 +251,8 @@ end_if3:
 	popq %rax # recupera valor de novo_bloco
 
 	# novo_bloco.occ = ocupado
-	movq BL_OCC, BL_OCC_OFFSET(%rax)
+	movq BL_OCC, %r8
+	movq %r8, BL_OCC_OFFSET(%rax)
 
 	addq 32, %rsp
 	popq %rbp

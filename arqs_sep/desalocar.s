@@ -12,7 +12,8 @@ meuFree:
 	movq %rdi, %rbx # carrega endereço de A
 
 	# SE A está livre: erro
-	cmpq BL_FREE, BL_OCC_OFFSET(%rbx)
+	movq BL_FREE, %r8
+	cmpq %r8, BL_OCC_OFFSET(%rbx)
 	je error
 
 	pushq %rbx # salvar endereço de A
@@ -25,7 +26,8 @@ meuFree:
 
 	popq %rbx
 
-	movq BL_FREE, BL_OCC_OFFSET(%rbx)
+	movq BL_FREE, %r8
+	movq %r8, BL_OCC_OFFSET(%rbx)
 
 	movq %rbx, %rdi
 	movq $free_list, %rsi
