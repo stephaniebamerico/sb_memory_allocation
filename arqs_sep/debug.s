@@ -4,7 +4,6 @@ str1: .string "------\nSize_mem: %d\n"
 str2: .string "Adress_m: %d\n"
 str3: .string "Current_: %d\n"
 str4: .string "Avaible_: %d\n"
-teste: .string "#"
 
 .equ ST_FIRST_PARAMETER, 16 # stack position of the first parameter
 .equ ST_SECOND_PARAMETER, 24 # stack position of second parameter
@@ -13,7 +12,7 @@ teste: .string "#"
 .globl debug
 
 debug:
-	pushq %rbp
+  pushq %rbp
   movq %rsp, %rbp
 
   #tam
@@ -36,10 +35,6 @@ debug:
   #memory avaible
   movq $str4, %rdi
   movq mem_avaible, %rsi
-  xor %rax, %rax  # tem q ter esse xor (não sei pq)
-  call printf
-  #memory avaible
-  movq $teste, %rdi
   xor %rax, %rax  # tem q ter esse xor (não sei pq)
   call printf
 
