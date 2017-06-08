@@ -4,8 +4,6 @@
 	.equ menor_bloco, -24
 	.equ menor_dif, -32
 
-	str1: .string "parte1"
-	str2: .string "parte2"
 
 .section .text
 .globl meuMalloc
@@ -13,7 +11,7 @@
 meuMalloc:
 	pushq %rbp
 	movq %rsp, %rbp
-	subq 32, %rsp
+	subq $32, %rsp
 
 	# Algoritmo: (first fit)
 	#	PERCORRE lista_livre COM bloco_atual
@@ -251,9 +249,9 @@ end_if3:
 	popq %rax # recupera valor de novo_bloco
 
 	# novo_bloco.occ = ocupado
-	movq BL_OCC, %r8
+	movq $BL_OCC, %r8
 	movq %r8, BL_OCC_OFFSET(%rax)
 
-	addq 32, %rsp
+	addq $32, %rsp
 	popq %rbp
 	ret

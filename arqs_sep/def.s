@@ -45,7 +45,7 @@ error:
 
 # rotina de erro com 4 variáveis locais
 error32:
-	addq 32, %rsp
+	addq $32, %rsp
     movq $0, %rax # retorna 0
     popq %rbp
     ret

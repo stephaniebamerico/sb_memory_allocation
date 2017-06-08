@@ -20,7 +20,7 @@ aux_merge:
 
 	# calcula endereço do bloco adjacente a A
 	movq BL_SIZ_OFFSET(%rax), %rcx
-	addq BL_HEAD_SIZE, %rcx
+	addq $BL_HEAD_SIZE, %rcx
 	addq %rax, %rcx
 
 	# SE endr_adj == &B
@@ -32,7 +32,7 @@ if1:
 	movq BL_NXT_OFFSET(%rbx), %r8
 	movq %r8, BL_NXT_OFFSET(%rax)
 	#	A.tam = B.tam + BL_HEAD_SIZE
-	movq BL_HEAD_SIZE, %r8
+	movq $BL_HEAD_SIZE, %r8
 	addq %r8, BL_SIZ_OFFSET(%rax)
 	movq BL_SIZ_OFFSET(%rbx), %r8
 	addq %r8, BL_SIZ_OFFSET(%rax)
@@ -58,7 +58,7 @@ aux_divide:
 if2:
 	# SE A.tam > tam + BL_HEAD_SIZE + 50 bytes
 	movq %rcx, %rax
-	addq BL_HEAD_SIZE, %rax
+	addq $BL_HEAD_SIZE, %rax
 	addq $50, %rax
 
 	cmpq %rax, BL_SIZ_OFFSET(%rbx)
@@ -67,7 +67,7 @@ if2:
 	#	&B = &A + tam + BL_HEAD_SIZE
 	movq %rbx, %rax # %rax := B (é que vai ser retornado da função)
 	addq %rcx, %rax
-	addq BL_HEAD_SIZE, %rax
+	addq $BL_HEAD_SIZE, %rax
 
 	#	B.prox = A.prox
 	movq BL_NXT_OFFSET(%rbx), %r8
@@ -78,13 +78,13 @@ if2:
 
 	#	B.tam = A.tam - (tam + BL_HEAD_SIZE)
 	movq %rcx, %rdx
-	addq BL_HEAD_SIZE, %rdx
+	addq $BL_HEAD_SIZE, %rdx
 	movq BL_SIZ_OFFSET(%rbx), %r8
 	movq %r8, BL_SIZ_OFFSET(%rax)
 	subq %rdx, BL_SIZ_OFFSET(%rax)
 
 	#	B.occ = livre
-	movq BL_FREE, %r8
+	movq $BL_FREE, %r8
 	movq %r8, BL_OCC_OFFSET(%rax)
 
 	popq %rbp
@@ -195,12 +195,12 @@ aux_alloc_brk:
 	movq %rdi, %rbx # salvar valor
 
 	addq current_break, %rdi # current_break + valor
-	movq SYS_BRK, %rax
+	movq $SYS_BRK, %rax
 	syscall
 
 	# verificação para garantir que foi alocado espaço
 	movq $0, %rdi
-	movq SYS_BRK, %rax
+	movq $SYS_BRK, %rax
 	syscall
 
 	# SE %rax (novo brk) =< current_break (antigo)
@@ -212,7 +212,7 @@ aux_alloc_brk:
 
 	# prepara endereço do novo_bloco
 	movq %rcx, %rax
-	addq BL_HEAD_SIZE, %rax
+	addq $BL_HEAD_SIZE, %rax
 
 	# prepara tamanho do novo_bloco
 	# novo_bloco.tam = current_break - &novo_bloco
@@ -221,7 +221,7 @@ aux_alloc_brk:
 	movq %rdx, BL_SIZ_OFFSET(%rax)
 
 	# novo_bloco.occ = livre
-	movq BL_FREE, %r8
+	movq $BL_FREE, %r8
 	movq %r8, BL_OCC_OFFSET(%rax)
 	# novo_bloco.prox = NULL
 	movq $0, BL_NXT_OFFSET(%rax)

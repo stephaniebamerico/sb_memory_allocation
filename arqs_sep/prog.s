@@ -26,6 +26,40 @@ _start:
 	movq $100, %rdi # Size_mem
     call meuMalloc
 
+	pushq $100
+    pushq %rax # Adress_m
+    call debug # print
+    popq %rax # remove Adress_m
+    subq $8, %rsp # remove Size_mem
+
+	movq $100, %rdi # Size_mem
+    call meuMalloc
+
+	pushq $100
+    pushq %rax # Adress_m
+    call debug # print
+    popq %rax # remove Adress_m
+    subq $8, %rsp # remove Size_mem
+
+	movq $100, %rdi # Size_mem
+    call meuMalloc
+
+	pushq $100
+    pushq %rax # Adress_m
+    call debug # print
+    popq %rax # remove Adress_m
+    subq $8, %rsp # remove Size_mem
+
+	movq $100, %rdi # Size_mem
+    call meuMalloc
+
+	pushq $100
+    pushq %rax # Adress_m
+    call debug # print
+    popq %rax # remove Adress_m
+    subq $8, %rsp # remove Size_mem
+
+
 
 	call finalizaAlocador
 
