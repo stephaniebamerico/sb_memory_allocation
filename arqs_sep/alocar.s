@@ -58,8 +58,8 @@ allocate_here: #header of the region to allocate is in %rax
     subq %rcx, %rdx
     subq $HEADER_SIZE, %rdx #leftover memory
 
-    cmpq $26, %rdx
-    jl allocate_here_end #check if leftover memory < 26
+    cmpq $34, %rdx
+    jl allocate_here_end #check if leftover memory < 34
 
     movq %rcx, HDR_SIZE_OFFSET(%rax) #mark the new size of the block allocated
     pushq %rax #store return adress
@@ -74,11 +74,6 @@ allocate_here: #header of the region to allocate is in %rax
 
 allocate_here_end:
     addq $HEADER_SIZE, %rax #%rax (return) <- usable memory adress
-
-    movq current_break, %rdi #memory avaible = heap_size
-    subq %rax, %rdi          #                 - memory request begin
-    subq %rcx, %rdi          #                 - memory request
-    movq %rdi, mem_avaible
 
     popq %rbp
     ret

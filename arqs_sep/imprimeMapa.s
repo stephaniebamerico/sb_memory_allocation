@@ -40,6 +40,7 @@ imprimeMapa:
 
     call print_1 #print '#' - avaible
     call print_1 #print '#' - block size
+    call print_1 #print '#' - list
 
     popq %rcx #restore regs
     popq %rbx
@@ -48,7 +49,7 @@ imprimeMapa:
     cmpq $UNAVAILABLE, HDR_AVAIL_OFFSET(%rax) #If the space is unavailable
     je not_a #start printing
 
-    movq $0, %rbx
+        movq $0, %rbx
 
         while_block_is: #scroll through the block
         pushq %rax #store regs

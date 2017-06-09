@@ -23,10 +23,6 @@ meuFree:
     subq $HEADER_SIZE, %rax #get the pointer to the real beginning of the memory
     movq $AVAILABLE, HDR_AVAIL_OFFSET(%rax) #mark it as available
 
-    movq mem_avaible, %rdi #add to avaible memory 
-    addq HDR_SIZE_OFFSET(%rax), %rdi
-    movq %rdi, mem_avaible
-
     popq %rbp
     ret
 ##end meuFree##

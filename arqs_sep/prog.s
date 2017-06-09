@@ -11,6 +11,7 @@ _start:
     call meuMalloc
     pushq %rax #Adress_m
     call debug #print
+    call imprimeMapa
     popq %rax #remove Adress_m
     subq $8, %rsp #remove Size_mem
 
@@ -18,6 +19,7 @@ _start:
     call meuMalloc
     pushq %rax #Adress_m
     call debug #print
+    call imprimeMapa
     popq %rax #remove Adress_m
     subq $8, %rsp #remove Size_mem
 
@@ -25,6 +27,7 @@ _start:
     call meuMalloc
     pushq %rax #Adress_m
     call debug #print
+    call imprimeMapa
     popq %rax #remove Adress_m
     subq $8, %rsp #remove Size_mem
 
@@ -32,53 +35,11 @@ _start:
     call meuFree
     pushq %rax #Adress_m
     call debug #print
-    popq %rax #remove Adress_m
-    subq $8, %rsp #remove Size_mem
-
-    pushq $4000 #Size_mem
-    call meuMalloc
-    pushq %rax #Adress_m
-    call debug #print
-    popq %rax #remove Adress_m
-    subq $8, %rsp #remove Size_mem
-    
-    pushq $65 #Size_mem
-    call meuMalloc
-    pushq %rax #Adress_m
-    call debug #print
-    popq %rax #remove Adress_m
-    subq $8, %rsp #remove Size_mem
-
-    pushq $64 #Size_mem
-    call meuMalloc
-    pushq %rax #Adress_m
-    call debug #print
-    popq %rax #remove Adress_m
-    subq $8, %rsp #remove Size_mem
-
-    pushq $5000 #Size_mem
-    call meuMalloc
-    pushq %rax #Adress_m
-    call debug #print
-    popq %rax #remove Adress_m
-    subq $8, %rsp #remove Size_mem
-
-    pushq $7000 #Size_mem
-    call meuMalloc
-    pushq %rax #Adress_m
-    call debug #print
-    popq %rax #remove Adress_m
-    subq $8, %rsp #remove Size_mem
-
-    pushq $1160 #Size_mem
-    call meuMalloc
-    pushq %rax #Adress_m
-    call debug #print
-    popq %rax #remove Adress_m
-    subq $8, %rsp #remove Size_mem
-
     call imprimeMapa
+    popq %rax #remove Adress_m
+    subq $8, %rsp #remove Size_mem
 
+    
     call finalizaAlocador
 
     popq %rbp

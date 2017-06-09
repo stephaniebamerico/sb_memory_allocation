@@ -21,13 +21,16 @@
 heap_begin : .quad 0
 # This points to one location past the memory we are managing
 current_break : .quad 0
-
-mem_avaible: .quad 0
+# This points to unavaible memory list
+unavaible_list : .quad 0
+# This points to avaible memory list
+avaible_list : .quad 0
 
 # #####STRUCTURE INFORMATION####
-.equ HEADER_SIZE, 16 #size of space for memory region header
+.equ HEADER_SIZE, 24 #size of space for memory region header
 .equ HDR_AVAIL_OFFSET, 0 #Location of the "available" flag in the header
 .equ HDR_SIZE_OFFSET, 8 #Location of the size field in the header
+.equ HDR_LIST_OFFSET, 16 #Location of next in list
 .equ ST_MEM_SIZE, 16 #stack position of the memory size to allocate/desallocate
 
 # ##########CONSTANTS###########

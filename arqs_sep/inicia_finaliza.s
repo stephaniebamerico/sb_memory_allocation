@@ -25,7 +25,6 @@ iniciaAlocador:
     #This will cause the allocate function to get
     #more memory from Linux the first time it is run
     movq %rax, current_break #store the current break
-    movq %rax, mem_avaible
     
     popq %rbp #exit the function
     ret

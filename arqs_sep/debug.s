@@ -32,11 +32,6 @@ debug:
   movq current_break, %rsi
   xor %rax, %rax  # tem q ter esse xor (não sei pq)
   call printf
-  #memory avaible
-  movq $str4, %rdi
-  movq mem_avaible, %rsi
-  xor %rax, %rax  # tem q ter esse xor (não sei pq)
-  call printf
 
   popq %rbp
   ret
