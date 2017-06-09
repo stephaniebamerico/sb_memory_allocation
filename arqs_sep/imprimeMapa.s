@@ -4,6 +4,7 @@ str1: .string "#"
 str2: .string "+"
 str3: .string "-"
 str4: .string "\n"
+teste: .string "\nTAMANHO: %d"
 
 .equ ST_FIRST_PARAMETER, 16 # stack position of the first parameter
 print_gap : .quad 500
@@ -38,6 +39,8 @@ imprimeMapa:
     pushq %rbx
     pushq %rcx
 
+    call mostraTam
+    call print_4
     call print_1 #print '#' - avaible
     call print_1 #print '#' - block size
     call print_1 #print '#' - list
@@ -126,6 +129,14 @@ print_3:
 print_4:
   movq $str4, %rax
   movq %rax, %rdi
+  xor %rax, %rax  # tem q ter esse xor (não sei pq)
+  call printf
+
+  ret
+
+mostraTam:
+  movq $teste, %rdi
+  movq %rcx, %rsi
   xor %rax, %rax  # tem q ter esse xor (não sei pq)
   call printf
 

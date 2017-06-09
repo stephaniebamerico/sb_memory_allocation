@@ -1,7 +1,7 @@
 AS_FLAGS=--gstabs+
 
 all: prog.o
-	ld -I /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 -lc -s *.o -o prog
+	ld -I /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 -lc *.o -o prog
 
 clean:
 	-rm *.o

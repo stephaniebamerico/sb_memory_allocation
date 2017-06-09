@@ -75,7 +75,66 @@ allocate_here: #header of the region to allocate is in %rax
 allocate_here_end:
     addq $HEADER_SIZE, %rax #%rax (return) <- usable memory adress
 
+    call insert_list_unavaible
     popq %rbp
+    ret
+
+insert_list_unavaible:
+    pushq %rax
+    subq $HEADER_SIZE, %rax #current position
+
+    movq unavaible_list, %rbx #list begin
+    movq heap_begin, %rdx
+    cmpq %rdx, %rbx #list is "null"
+    je first_time_allocate
+
+    subq $HEADER_SIZE, %rbx #header begin
+
+while_insert_list:
+    movq HDR_LIST_OFFSET(%rbx), %rcx #next position
+    cmpq %rdx, %rcx #next is "null"
+    je insert_at_end
+    
+    cmpq %rcx, %rax #if rax > rcx
+    jg next_list
+
+    #if rax < rcx
+    movq %rax, HDR_LIST_OFFSET(%rbx) #rbx.next <- rax
+    movq %rcx, HDR_LIST_OFFSET(%rax) #rax.next <- rcx
+    jmp insert_unavaible_end
+
+    #list is "null"
+    first_time_allocate:
+    movq %rdx, HDR_LIST_OFFSET(%rax) #next is "null"
+    addq $HEADER_SIZE, %rax #begin memory region
+    movq %rax, unavaible_list
+    jmp insert_unavaible_end
+
+    #next is "null"
+    insert_at_end:
+        cmpq %rax, %rbx
+        jg insert_before
+
+        #insert after
+        movq %rax, HDR_LIST_OFFSET(%rbx) #rbx.next <- rax
+        movq %rdx, HDR_LIST_OFFSET(%rax) #rax.next <- "null"
+        jmp insert_unavaible_end
+
+        insert_before:
+        movq %rbx, HDR_LIST_OFFSET(%rax) #rax.next <- rbx
+        cmpq unavaible_list, %rbx #if rbx not is the head of the list
+        jne  insert_unavaible_end
+
+        #if rbx is the head of the list
+        movq %rax, unavaible_list
+        jmp insert_unavaible_end
+
+    next_list:
+        movq %rcx, %rbx
+        jmp while_insert_list
+
+insert_unavaible_end:
+    popq %rax
     ret
 
 move_break: #we have exhausted all addressable memory, so ask for more.
@@ -84,7 +143,7 @@ move_break: #we have exhausted all addressable memory, so ask for more.
     addq $HEADER_SIZE, %rdi #total memory needed
     movq $0, %rdx
 
-while:
+    while:
     addq $4096, %rdx
     cmpq %rdi, %rdx
     jl while

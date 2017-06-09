@@ -2,12 +2,15 @@
 
 .globl heap_begin
 .globl current_break
+.globl unavaible_list
+.globl avaible_list
 
 .globl mem_avaible
 
 .globl HEADER_SIZE
 .globl HDR_AVAIL_OFFSET
 .globl HDR_SIZE_OFFSET
+.globl HDR_LIST_OFFSET
 
 .globl ST_MEM_SIZE
 
@@ -47,4 +50,3 @@ error:
 	movq $0, %rax
 	popq %rbp
 	ret
-

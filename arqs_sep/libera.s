@@ -21,7 +21,9 @@ meuFree:
 
     movq ST_MEM_SIZE(%rbp), %rax #get the address of the memory to free
     subq $HEADER_SIZE, %rax #get the pointer to the real beginning of the memory
+    movq HDR_SIZE_OFFSET(%rax), %rcx #%rcx <- current block size
     movq $AVAILABLE, HDR_AVAIL_OFFSET(%rax) #mark it as available
+    movq HDR_SIZE_OFFSET(%rax), %rdx #%rcx <- current block size
 
     popq %rbp
     ret
