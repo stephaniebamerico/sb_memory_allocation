@@ -77,9 +77,11 @@ _start:
     popq %rax #remove Adress_m
     subq $8, %rsp #remove Size_mem
 
+    call imprimeMapa
+
     call finalizaAlocador
 
     popq %rbp
-    movq %rax, %rdi
+    movq $1, %rdi
     movq $SYS_EXIT, %rax
     syscall

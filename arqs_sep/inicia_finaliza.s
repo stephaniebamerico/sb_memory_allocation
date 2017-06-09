@@ -43,11 +43,8 @@ finalizaAlocador:
     movq heap_begin, %rdi
     syscall #desallocate heap
 
-    #if it fail
-    cmpq heap_begin, %rax
-    jne error
-
-    movq %rax, current_break
+    movq heap_begin, %rdi
+    movq %rdi, current_break
     
     popq %rbp #exit the function
     ret

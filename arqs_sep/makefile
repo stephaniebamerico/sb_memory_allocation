@@ -9,7 +9,7 @@ purge: clean
 
 #---------
 
-prog: alocar.o debug.o def.o inicia_finaliza.o libera.o
+prog: alocar.o debug.o def.o imprimeMapa.o inicia_finaliza.o libera.o
 	as prog.s -o prog.o
 alocar: def.o
 	as alocar.s -o alocar.o
@@ -17,6 +17,8 @@ debug: def.o
 	as debug.s -o debug.o
 def:
 	as def.s -o def.o
+imprimeMapa: def.o
+	as imprimeMapa.s -o imprimeMapa.o
 inicia_finaliza:
 	as inicia_finaliza.s -o inicia_finaliza.o
 libera: def.o

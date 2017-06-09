@@ -35,7 +35,7 @@ alloc_loop_begin:
     cmpq %rbx, %rax #need more memory if these are equal
     je move_break
 
-    movq HDR_SIZE_OFFSET(%rax), %rdx #grab the size of this memory
+    movq HDR_SIZE_OFFSET(%rax), %rdx #grab the size of this block
     cmpq $UNAVAILABLE, HDR_AVAIL_OFFSET(%rax) #If the space is unavailable,
     je next_location #go to the next one
     
