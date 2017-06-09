@@ -28,7 +28,7 @@ meuMalloc:
     movq %rsp, %rbp
 
     movq ST_MEM_SIZE(%rbp), %rcx #%rcx <- size we are looking for (parameter (1))
-    movq heap_begin, %rax #%rax <- current search location
+    movq avaible_list, %rax #%rax <- current search location
     movq current_break, %rbx #%rbx <- current break
 
 alloc_loop_begin:
@@ -69,7 +69,12 @@ allocate_here: #header of the region to allocate is in %rax
 
     movq $AVAILABLE, HDR_AVAIL_OFFSET(%rax) #mark space as available
     movq %rdx, HDR_SIZE_OFFSET(%rax) #mark the new size of the block leftover
-    
+    movq heap_begin, %rdx
+    movq %rdx, HDR_LIST_OFFSET(%rax) #next is "null"
+
+    addq $HEADER_SIZE, %rax
+    call insert_list_avaible
+
     popq %rax #restores return adress
 
 allocate_here_end:
@@ -95,8 +100,9 @@ while_insert_list:
     cmpq %rdx, %rcx #next is "null"
     je insert_at_end
     
-    cmpq %rcx, %rax #if rax > rcx
-    jg next_list
+    cmpq %rcx, %rax
+    je insert_unavaible_end
+    jg next_list #if rax > rcx
 
     #if rax < rcx
     movq %rax, HDR_LIST_OFFSET(%rbx) #rbx.next <- rax
@@ -134,7 +140,33 @@ while_insert_list:
         jmp while_insert_list
 
 insert_unavaible_end:
+    call remove_avaible_list
+
     popq %rax
+    ret
+
+remove_avaible_list:
+    movq avaible_list, %rbx #list begin
+    movq heap_begin, %rdx
+    cmpq %rdx, %rbx #list is "null"
+    je remove_avaible_list_end
+
+    subq $HEADER_SIZE, %rbx
+    while_remove_list:
+        movq HDR_LIST_OFFSET(%rbx), %rcx #next position
+        cmpq %rdx, %rcx #next is "null"
+        je remove_avaible_list_end
+
+        cmpq %rax, %rcx
+        je remove_list
+        movq %rcx, %rbx
+        jmp while_remove_list
+
+        remove_list: #rbx.next = rax.next
+        movq HDR_LIST_OFFSET(%rax), %rdx #next position
+        movq %rdx, HDR_LIST_OFFSET(%rbx)
+
+remove_avaible_list_end:
     ret
 
 move_break: #we have exhausted all addressable memory, so ask for more.
