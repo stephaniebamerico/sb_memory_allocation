@@ -1,10 +1,11 @@
 .section .data
 print1: .string "inicio heap: %ld \n"
+print2: .string "\nfim heap: %ld \n"
 str1: .string "------\nSize_mem: %d\n"
-str2: .string "Adress_m: %d\n"
-str3: .string "Current_: %d\n"
+str2: .string "Adress_m: %ld\n"
+str3: .string "Current_: %ld\n"
 here: .string "******Here******\n"
-n: .string "* N: %d *\n"
+n: .string "* N: %ld *\n"
 
 .equ ST_FIRST_PARAMETER, 16 # stack position of the first parameter
 .equ ST_SECOND_PARAMETER, 24 # stack position of second parameter
@@ -23,43 +24,56 @@ _start:
 	xor %rax, %rax
 	call printf
 
-	movq $100, %rdi # Size_mem
+	movq $1000, %rdi # Size_mem
     call meuMalloc
 
-	pushq $100
+
     pushq %rax # Adress_m
     call debug # print
     popq %rax # remove Adress_m
-    subq $8, %rsp # remove Size_mem
+
+	movq $2000, %rdi # Size_mem
+    call meuMalloc
+
+
+    pushq %rax # Adress_m
+    call debug # print
+    popq %rax # remove Adress_m
+
+	movq $4000, %rdi # Size_mem
+    call meuMalloc
+
+    pushq %rax # Adress_m
+    call debug # print
+    popq %rax # remove Adress_m
+
+	movq $5000, %rdi # Size_mem
+    call meuMalloc
+
+    pushq %rax # Adress_m
+    call debug # print
+    popq %rax # remove Adress_m
+
+	movq $100000, %rdi # Size_mem
+    call meuMalloc
+
+    pushq %rax # Adress_m
+    call debug # print
+    popq %rax # remove Adress_m
+
 
 	movq $100, %rdi # Size_mem
     call meuMalloc
 
-	pushq $100
     pushq %rax # Adress_m
     call debug # print
     popq %rax # remove Adress_m
-    subq $8, %rsp # remove Size_mem
-
-	movq $100, %rdi # Size_mem
-    call meuMalloc
-
-	pushq $100
-    pushq %rax # Adress_m
-    call debug # print
-    popq %rax # remove Adress_m
-    subq $8, %rsp # remove Size_mem
-
-	movq $100, %rdi # Size_mem
-    call meuMalloc
-
-	pushq $100
-    pushq %rax # Adress_m
-    call debug # print
-    popq %rax # remove Adress_m
-    subq $8, %rsp # remove Size_mem
 
 
+	movq $print2, %rdi
+	movq current_break, %rsi
+	xor %rax, %rax
+	call printf
 
 	call finalizaAlocador
 
@@ -74,9 +88,9 @@ _start:
 	    movq %rsp, %rbp
 
 	    # tam
-	    movq ST_SECOND_PARAMETER(%rbp), %rax
+	    movq ST_FIRST_PARAMETER(%rbp), %rax
+		movq BL_SIZ_OFFSET(%rax), %rsi
 	    movq $str1, %rdi
-	    movq %rax, %rsi
 	    xor %rax, %rax  # tem q ter esse xor (não sei pq)
 	    call printf
 

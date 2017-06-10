@@ -66,7 +66,7 @@ meuMalloc:
 	#	RETORNA novo_bloco
 part1:
 	movq %rdi, pedido(%rbp)
-	movq free_list, %rcx # %rcx := bloco_atual
+	movq fr_lst, %rcx # %rcx := bloco_atual
 
 while1:
 	# SE bloco_atual == NULL : GOTO parte2
@@ -112,34 +112,29 @@ end_if1:
 	jmp while2
 end_while2:
 
-	# bloco_div = divide(bloco_atual,pedido)
-	pushq %rcx # salvar o valor de bloco_atual
-	movq %rcx, %rdi
+	# bloco_div = divide(menor_bloco,pedido)
+	movq menor_bloco(%rbp), %rdi
 	movq pedido(%rbp), %rsi
 	call aux_divide
 
-	# checagem de erro
-	cmpq $0, %rax
-	je error32
+	# # checagem de erro
+	# cmpq $0, %rax
+	# je error32
 
-	popq %rcx
 
-	# remove(bloco_atual,lista_livre)
+	# remove(menor_bloco,lista_livre)
 	pushq %rax # salvar o valor de bloco_div
-	pushq %rcx # salvar o valor de bloco_atual
-	movq %rcx, %rdi
-	movq $occ_list, %rsi
+	movq menor_bloco(%rbp), %rdi
+	movq $fr_lst, %rsi
 	call aux_remove
 
 	# checagem de erro
 	cmpq $0, %rax
 	je error32
 
-	popq %rcx
 
-	# insere(bloco_atual,lista_ocupado)
-	pushq %rcx # salvar o valor de bloco_atual
-	movq %rcx, %rdi
+	# insere(menor_bloco,lista_ocupado)
+	movq menor_bloco(%rbp), %rdi
 	movq $occ_list, %rsi
 	call aux_insert
 
@@ -147,33 +142,31 @@ end_while2:
 	cmpq $0, %rax
 	je error32
 
-	popq %rcx
 	popq %rax
 
-if2:
-	# SE bloco_div != NULL
-	cmp $0, %rax
-	je end_if2
-	#	insere(bloco_div,lista_livre)
-	pushq %rcx
-	movq %rax, %rdi
-	movq $free_list, %rsi
-	call aux_insert
+# if2:
+# 	# SE bloco_div != NULL
+# 	cmp $0, %rax
+# 	je end_if2
+# 	#	insere(bloco_div,lista_livre)
+# 	movq %rax, %rdi
+# 	movq $fr_lst, %rsi
+# 	call aux_insert
+#
+# 	# checagem de erro
+# 	cmpq $0, %rax
+# 	je error32
+#
+# end_if2:
 
-	# checagem de erro
-	cmpq $0, %rax
-	je error32
-
-	popq %rcx
-end_if2:
-
-	# bloco_atual.occ = ocupado
-	movq BL_OCC, %r8
+	# menor_bloco.occ = ocupado
+	movq menor_bloco(%rbp), %rcx
+	movq $BL_OCC, %r8
 	movq %r8, BL_OCC_OFFSET(%rcx)
 
 	# RETORNA bloco_atual
 	movq %rcx, %rax
-	addq 32, %rsp
+	addq $32, %rsp
 	popq %rbp
 	ret
 
@@ -215,6 +208,7 @@ while3:
 	cmpq $0, %rax
 	je error32
 
+	jmp while3
 end_while3:
 
 
@@ -242,7 +236,7 @@ if3:
 
 	# 	insere(bloco_div,lista_livre)
 	movq %rbx, %rdi
-	movq $free_list, %rsi
+	movq $fr_lst, %rsi
 	call aux_insert
 end_if3:
 

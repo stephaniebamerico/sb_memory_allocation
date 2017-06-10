@@ -30,7 +30,7 @@ meuFree:
 	movq %r8, BL_OCC_OFFSET(%rbx)
 
 	movq %rbx, %rdi
-	movq $free_list, %rsi
+	movq $fr_lst, %rsi
 	call aux_insert
 
 	# checagem de erro

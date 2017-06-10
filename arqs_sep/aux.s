@@ -42,7 +42,7 @@ if1:
 	ret
 end_if1:
 	# A e B não são blocos adjacentes
-	call error
+	jmp error
 
 
 # Faz a divisão de um bloco de acordo com o tamanho especificado
@@ -83,6 +83,9 @@ if2:
 	movq %r8, BL_SIZ_OFFSET(%rax)
 	subq %rdx, BL_SIZ_OFFSET(%rax)
 
+	#	A.tam = tam
+	movq %rcx, BL_SIZ_OFFSET(%rbx)
+
 	#	B.occ = livre
 	movq $BL_FREE, %r8
 	movq %r8, BL_OCC_OFFSET(%rax)
@@ -91,7 +94,7 @@ if2:
 	ret
 end_if2:
 	# não há espaço para dividir A
-	call error
+	jmp error
 
 
 
@@ -130,7 +133,7 @@ if4:
 	jne end_if4
 
 	#	novo_bloco já está na lista
-	call error
+	jmp error
 end_if4:
 
 if5:
@@ -165,7 +168,7 @@ while1_p2:
 while1_err:
 	jne while1_err_end
 	# &bloco_atual.prox == &novo_bloco : erro
-	call error
+	jmp error
 while1_err_end:
 	jg while1_end
 

@@ -1,11 +1,11 @@
 .section .data
 
-.globl free_list
+.globl fr_lst
 .globl occ_list
 .globl heap_begin
 .globl current_break
 
-	free_list: .quad 0
+	fr_lst: .quad 0
 	occ_list: .quad 0
 	heap_begin: .quad 0
 	current_break: .quad 0
