@@ -154,14 +154,8 @@ while1:
 while1_p1:
 	# SE bloco_atual.prox == NULL : insere no final
 	cmpq $0, BL_NXT_OFFSET(%rcx)
-	jne while1_p2
+	je while1_end
 
-	#	bloco_atual.prox = novo_bloco
-	movq %rax, BL_NXT_OFFSET(%rcx)
-
-	movq $1, %rax
-	popq %rbp
-	ret
 while1_p2:
 	# ENQUANTO &bloco_atual.prox < &novo_bloco
 	cmpq BL_NXT_OFFSET(%rcx), %rax
@@ -170,7 +164,7 @@ while1_err:
 	# &bloco_atual.prox == &novo_bloco : erro
 	jmp error
 while1_err_end:
-	jg while1_end
+	jl while1_end
 
 	#	bloco_atual = bloco_atual.prox
 	movq BL_NXT_OFFSET(%rcx), %rcx

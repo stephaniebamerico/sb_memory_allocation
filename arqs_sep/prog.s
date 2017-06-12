@@ -3,8 +3,9 @@ print1: .string "inicio heap: %ld \n"
 print2: .string "\nfim heap: %ld \n"
 str1: .string "------\nSize_mem: %d\n"
 str2: .string "Adress_m: %ld\n"
+str6: .string "Adress_r: %ld\n"
 str3: .string "Current_: %ld\n"
-str4: .string "Occupied: %ld\n"
+str4: .string "Occupied: %d\n"
 str5: .string "Next_blk: %ld\n"
 here: .string "******Here******\n"
 n: .string "* N: %ld *\n"
@@ -34,10 +35,10 @@ _start:
 	# pushq %rax # Adress_m
     # call debug # print
     # popq %rax # remove Adress_m
-	call mapa
+	# call mapa
 
-	# movq %rax, %rdi
-	# call meuFree
+	movq %rax, %rdi
+	call meuFree
 	# call mapa
 
 	movq $2000, %rdi # Size_mem
@@ -46,10 +47,10 @@ _start:
     # pushq %rax # Adress_m
     # call debug # print
     # popq %rax # remove Adress_m
-	call mapa
+	# call mapa
 
-	# movq %rax, %rdi
-	# call meuFree
+	movq %rax, %rdi
+	call meuFree
 	# call mapa
 
 	movq $4000, %rdi # Size_mem
@@ -58,10 +59,10 @@ _start:
     # pushq %rax # Adress_m
     # call debug # print
     # popq %rax # remove Adress_m
-	call mapa
+	# call mapa
 
-	# movq %rax, %rdi
-	# call meuFree
+	movq %rax, %rdi
+	call meuFree
 	# call mapa
 
 
@@ -71,10 +72,10 @@ _start:
     # pushq %rax # Adress_m
     # call debug # print
     # popq %rax # remove Adress_m
-	call mapa
+	# call mapa
 
-	# movq %rax, %rdi
-	# call meuFree
+	movq %rax, %rdi
+	call meuFree
 	# call mapa
 
 	movq $100000, %rdi # Size_mem
@@ -83,22 +84,25 @@ _start:
     # pushq %rax # Adress_m
     # call debug # print
     # popq %rax # remove Adress_m
-	call mapa
+	# call mapa
 
 
 	movq $100, %rdi # Size_mem
     call meuMalloc
 
+	call map_lista_free
+	call map_lista_occ
     # pushq %rax # Adress_m
     # call debug # print
     # popq %rax # remove Adress_m
-	call mapa
+	# call mapa
 
 
 	movq $print2, %rdi
 	movq current_break, %rsi
 	xor %rax, %rax
 	call printf
+
 
 	call finalizaAlocador
 
@@ -108,44 +112,58 @@ _start:
     syscall
 
 
-	debug:
-	    pushq %rbp
-	    movq %rsp, %rbp
+debug:
+    pushq %rbp
+    movq %rsp, %rbp
 
-	    # tam
-	    movq ST_FIRST_PARAMETER(%rbp), %rax
-		movq BL_SIZ_OFFSET(%rax), %rsi
-	    movq $str1, %rdi
-	    xor %rax, %rax  # tem q ter esse xor (não sei pq)
-	    call printf
+    # tam
+    movq ST_FIRST_PARAMETER(%rbp), %rax
+	movq BL_SIZ_OFFSET(%rax), %rsi
+    movq $str1, %rdi
+    xor %rax, %rax  # tem q ter esse xor (não sei pq)
+    call printf
 
-	    # endereco
-	    movq ST_FIRST_PARAMETER(%rbp), %rax
-	    movq $str2, %rdi
-	    movq %rax, %rsi
-	    xor %rax, %rax  # tem q ter esse xor (não sei pq)
-	    call printf
+	# endereco abs
+	movq ST_FIRST_PARAMETER(%rbp), %rax
+	movq $str2, %rdi
+	movq %rax, %rsi
+	xor %rax, %rax  # tem q ter esse xor (não sei pq)
+	# call printf
 
-		# ocupado
-		movq ST_FIRST_PARAMETER(%rbp), %rax
-		movq BL_OCC_OFFSET(%rax), %rsi
-	    movq $str4, %rdi
-	    xor %rax, %rax  # tem q ter esse xor (não sei pq)
-	    call printf
+    # endereco rel
+    movq ST_FIRST_PARAMETER(%rbp), %rax
+    movq $str6, %rdi
+	subq heap_begin, %rax
+    movq %rax, %rsi
+    xor %rax, %rax  # tem q ter esse xor (não sei pq)
+    call printf
 
-		# prox
+	# ocupado
+	movq ST_FIRST_PARAMETER(%rbp), %rax
+	movq BL_OCC_OFFSET(%rax), %rsi
+    movq $str4, %rdi
+    xor %rax, %rax  # tem q ter esse xor (não sei pq)
+    call printf
 
-		movq ST_FIRST_PARAMETER(%rbp), %rax
-		movq BL_NXT_OFFSET(%rax), %rsi
-	    movq $str5, %rdi
-	    xor %rax, %rax  # tem q ter esse xor (não sei pq)
-	    call printf
+	# prox
 
-	    # current end
-	    movq $str3, %rdi
-	    movq current_break, %rsi
-	    xor %rax, %rax  # tem q ter esse xor (não sei pq)
-	    call printf
+	movq ST_FIRST_PARAMETER(%rbp), %rax
+	movq BL_NXT_OFFSET(%rax), %rsi
+if1:
+	cmpq $0, %rsi
+	je end_if1
+	subq heap_begin, %rsi
+end_if1:
+    movq $str5, %rdi
+    xor %rax, %rax  # tem q ter esse xor (não sei pq)
+    call printf
 
-	    popq %rbp
-	    ret
+    # current end
+    movq $str3, %rdi
+    movq current_break, %rsi
+	subq heap_begin, %rsi
+    xor %rax, %rax  # tem q ter esse xor (não sei pq)
+    call printf
+
+    popq %rbp
+    ret
