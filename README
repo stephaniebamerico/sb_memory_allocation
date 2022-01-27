@@ -1,2 +1,6 @@
+# Software Básico - Alocador de Memória
+
+Trabalho desenvolvido para a disciplina Software Básico na Universidade Federal do Paraná.
+
 Para rodar:
 as prog.s -o prog.o; ld prog.o -o prog; ./prog; echo $?
